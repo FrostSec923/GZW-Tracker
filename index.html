@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GZW Operations Tracker</title>
-</head>
-<body>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
 
@@ -409,20 +407,21 @@ button:active {
   }
 }
 </style>
-
+</head>
+<body>
 <div class="container">
-<h1>GZW OPERATIONS TRACKER</h1>
+<h1>⚡ GZW OPERATIONS TRACKER ⚡</h1>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('dash', event)">Dashboard</div>
-  <div class="tab" onclick="showTab('new', event)">New Op</div>
-  <div class="tab" onclick="showTab('map', event)">Map Intel</div>
-  <div class="tab" onclick="showTab('loadout', event)">Loadout</div>
-  <div class="tab" onclick="showTab('history', event)">History</div>
+  <div class="tab active" onclick="showTab('dash')">Dashboard</div>
+  <div class="tab" onclick="showTab('new')">New Op</div>
+  <div class="tab" onclick="showTab('map')">Map Intel</div>
+  <div class="tab" onclick="showTab('loadout')">Loadout</div>
+  <div class="tab" onclick="showTab('history')">History</div>
 </div>
 
 <div id="dash" class="content active">
-<h2>Mission Control</h2>
+<h2>⚡ Mission Control</h2>
 <div class="stats-grid">
 <div class="stat"><h3>Total Ops</h3><div class="value" id="totalOps">0</div></div>
 <div class="stat"><h3>Survival Rate</h3><div class="value" id="survival">0%</div></div>
@@ -433,10 +432,11 @@ button:active {
 </div>
 
 <div id="new" class="content">
-<h2>Log New Operation</h2>
+<h2>🎯 Log New Operation</h2>
+<form id="opForm">
 <label>Operator Name:</label>
 <input type="text" id="player" placeholder="Enter your name or callsign" required>
-<form id="opForm">
+
 <label>Operation Codename:</label>
 <input type="text" id="codename" placeholder="Operation Red Wing">
 
@@ -478,12 +478,12 @@ button:active {
 <label>After Action Report (Notes):</label>
 <textarea id="notes" placeholder="Mission intel, contact reports, lessons learned..."></textarea>
 
-<button type="submit">LOG OPERATION</button>
+<button type="submit">🚀 LOG OPERATION</button>
 </form>
 </div>
 
 <div id="map" class="content">
-<h2>Map Intel</h2>
+<h2>🗺️ Map Intel</h2>
 
 <div class="map-controls">
 <div class="map-legend">
@@ -515,7 +515,7 @@ Click on the map while logging a new operation to mark your position. Hover over
 </div>
 
 <div id="loadout" class="content">
-<h2>Loadout Manager</h2>
+<h2>🔫 Loadout Manager</h2>
 
 <div class="grid-2">
 <div class="panel">
@@ -535,50 +535,31 @@ Click on the map while logging a new operation to mark your position. Hover over
 </div>
 
 <div id="history" class="content">
-<h2>Operation History</h2>
+<h2>📜 Operation History</h2>
 <div id="opList"></div>
 </div>
 
 </div>
 
 <script>
-let ops = [];
-google.script.run.withSuccessHandler(function(data) {
-  ops = data;
-  updateDash();
-  updateHistory();
-  renderMapMarkers();
-}).getOperations();
+let ops = JSON.parse(localStorage.getItem('ops') || '[]');
+let weapons = JSON.parse(localStorage.getItem('weapons') || '["AKM","M4A1","AK-74","SCAR-L","MP5","Vector","Mosin","SVD","HK416","M700"]');
+let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO","7.62x39","5.45x39","9mm","7.62x51",".308 Win","12 Gauge"]');
 
-let weapons = [];
-let ammo = [];
-
-google.script.run.withSuccessHandler(function(data){
-  weapons = data;
-  updateWeaponDropdown();
-  updateWeaponList();
-}).getWeapons();
-
-google.script.run.withSuccessHandler(function(data){
-  ammo = data;
-  updateAmmoDropdown();
-  updateAmmoList();
-}).getAmmo();
-
-function showTab(tab, ev) {
+function showTab(tab) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(tab).classList.add('active');
-  ev.target.classList.add('active');
-
-  if (tab === 'dash') updateDash();
-  if (tab === 'history') updateHistory();
-  if (tab === 'map') renderMapMarkers();
-  if (tab === 'loadout') {
+  event.target.classList.add('active');
+  
+  if(tab === 'dash') updateDash();
+  if(tab === 'history') updateHistory();
+  if(tab === 'map') renderMapMarkers();
+  if(tab === 'loadout') {
     updateWeaponList();
     updateAmmoList();
   }
-  if (tab === 'new') {
+  if(tab === 'new') {
     updateWeaponDropdown();
     updateAmmoDropdown();
   }
@@ -599,7 +580,7 @@ function renderMapMarkers() {
   const container = document.getElementById('mapMarkers');
   container.innerHTML = '';
   
-  ops.filter(function(op) { return op.mapX && op.mapY; }).forEach(function(op) {
+  ops.filter(op => op.mapX && op.mapY).forEach(op => {
     const marker = document.createElement('div');
     marker.className = 'map-marker ' + op.result.toLowerCase();
     marker.style.left = op.mapX + '%';
@@ -614,7 +595,7 @@ function renderMapMarkers() {
     });
     
     marker.addEventListener('click', function() {
-      alert('OPERATION: ' + op.codename + '\nLZ: ' + op.lz + '\nTarget: ' + op.target + '\nResult: ' + op.result + '\nLoadout: ' + op.weapon + ' / ' + op.ammo + '\nKills: ' + op.kills + '\nProfit: $' + op.profit.toLocaleString() + '\nTime: ' + op.time);
+      alert('OPERATION: ' + op.codename + '\nOperator: ' + op.player + '\nLZ: ' + op.lz + '\nTarget: ' + op.target + '\nResult: ' + op.result + '\nLoadout: ' + op.weapon + ' / ' + op.ammo + '\nKills: ' + op.kills + '\nProfit: $' + op.profit.toLocaleString() + '\nTime: ' + op.time);
     });
     
     container.appendChild(marker);
@@ -652,116 +633,106 @@ document.getElementById('opForm').onsubmit = function(e) {
     mapY: document.getElementById('mapY').value || null,
     notes: document.getElementById('notes').value
   };
-
-  google.script.run.withSuccessHandler(function() {
-    alert('Operation logged to Google Sheets!');
-    google.script.run.withSuccessHandler(function(data) {
-      ops = data;
-      updateDash();
-      updateHistory();
-      renderMapMarkers();
-    }).getOperations();
-  }).addOperation(op);
-
+  
+  ops.unshift(op);
+  localStorage.setItem('ops', JSON.stringify(ops));
   this.reset();
-  showTab('dash', {target: document.querySelector('.tab')});
+  updateDash();
+  alert('✅ Operation logged successfully!');
+  showTab('dash');
 };
 
 function updateWeaponDropdown() {
   const select = document.getElementById('weapon');
   select.innerHTML = '<option value="">Select Weapon...</option>' + 
-    weapons.sort().map(function(w) { return '<option>' + w + '</option>'; }).join('');
+    weapons.sort().map(w => '<option>' + w + '</option>').join('');
 }
 
 function updateAmmoDropdown() {
   const select = document.getElementById('ammo');
   select.innerHTML = '<option value="">Select Ammo...</option>' + 
-    ammo.sort().map(function(a) { return '<option>' + a + '</option>'; }).join('');
+    ammo.sort().map(a => '<option>' + a + '</option>').join('');
 }
 
 function addWeapon() {
   const input = document.getElementById('newWeapon');
   const w = input.value.trim();
-  if(w) {
-    google.script.run.withSuccessHandler(function(data){
-      weapons = data;
-      updateWeaponList();
-      updateWeaponDropdown();
-    }).addWeapon(w);
+  if(w && !weapons.includes(w)) {
+    weapons.push(w);
+    localStorage.setItem('weapons', JSON.stringify(weapons));
+    updateWeaponList();
+    updateWeaponDropdown();
     input.value = '';
   }
 }
 
 function removeWeapon(w) {
   if(confirm('Remove ' + w + '?')) {
-    google.script.run.withSuccessHandler(function(data){
-      weapons = data;
-      updateWeaponList();
-      updateWeaponDropdown();
-    }).removeWeapon(w);
+    weapons = weapons.filter(x => x !== w);
+    localStorage.setItem('weapons', JSON.stringify(weapons));
+    updateWeaponList();
+    updateWeaponDropdown();
   }
 }
 
 function updateWeaponList() {
-  document.getElementById('weaponList').innerHTML = weapons.sort().map(function(w) {
-    return '<div class="weapon-item"><span>' + w + '</span><button onclick="removeWeapon(\'' + w + '\')" class="btn-small">Remove</button></div>';
-  }).join('');
+  document.getElementById('weaponList').innerHTML = weapons.sort().map(w => 
+    '<div class="weapon-item"><span>' + w + '</span><button onclick="removeWeapon(\'' + w + '\')" class="btn-small">Remove</button></div>'
+  ).join('');
 }
 
 function addAmmo() {
   const input = document.getElementById('newAmmo');
   const a = input.value.trim();
-  if(a) {
-    google.script.run.withSuccessHandler(function(data){
-      ammo = data;
-      updateAmmoList();
-      updateAmmoDropdown();
-    }).addAmmo(a);
+  if(a && !ammo.includes(a)) {
+    ammo.push(a);
+    localStorage.setItem('ammo', JSON.stringify(ammo));
+    updateAmmoList();
+    updateAmmoDropdown();
     input.value = '';
   }
 }
 
 function removeAmmo(a) {
   if(confirm('Remove ' + a + '?')) {
-    google.script.run.withSuccessHandler(function(data){
-      ammo = data;
-      updateAmmoList();
-      updateAmmoDropdown();
-    }).removeAmmo(a);
+    ammo = ammo.filter(x => x !== a);
+    localStorage.setItem('ammo', JSON.stringify(ammo));
+    updateAmmoList();
+    updateAmmoDropdown();
   }
 }
 
 function updateAmmoList() {
-  document.getElementById('ammoList').innerHTML = ammo.sort().map(function(a) {
-    return '<div class="weapon-item"><span>' + a + '</span><button onclick="removeAmmo(\'' + a + '\')" class="btn-small">Remove</button></div>';
-  }).join('');
+  document.getElementById('ammoList').innerHTML = ammo.sort().map(a => 
+    '<div class="weapon-item"><span>' + a + '</span><button onclick="removeAmmo(\'' + a + '\')" class="btn-small">Remove</button></div>'
+  ).join('');
 }
 
 function updateDash() {
   document.getElementById('totalOps').textContent = ops.length;
-  const survived = ops.filter(function(o) { return o.result === 'Survived'; }).length;
+  const survived = ops.filter(o => o.result === 'Survived').length;
   document.getElementById('survival').textContent = ops.length ? Math.round(survived/ops.length*100) + '%' : '0%';
-  const totalProfit = ops.reduce(function(s, o) { return s + o.profit; }, 0);
+  const totalProfit = ops.reduce((s, o) => s + o.profit, 0);
   document.getElementById('profit').textContent = '$' + totalProfit.toLocaleString();
-  const totalKills = ops.reduce(function(s, o) { return s + o.kills; }, 0);
+  const totalKills = ops.reduce((s, o) => s + o.kills, 0);
   document.getElementById('totalKills').textContent = totalKills;
   
-  document.getElementById('recent').innerHTML = '<h3>Recent Operations</h3>' + 
-    ops.slice(0,5).map(function(o) {
-      return '<div class="op-item"><strong>' + o.codename + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>' + o.weapon + ' (' + o.ammo + ')<br>' + o.kills + ' kills | $' + o.profit.toLocaleString() + '<br>' + o.time + '</div>';
-    }).join('');
+  document.getElementById('recent').innerHTML = '<h3>⚡ Recent Operations</h3>' + 
+    ops.slice(0,5).map(o => 
+      '<div class="op-item"><strong>' + o.codename + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>👤 ' + o.player + '<br>📍 LZ: ' + o.lz + ' | 🎯 Target: ' + o.target + '<br>🔫 ' + o.weapon + ' (' + o.ammo + ')<br>💀 ' + o.kills + ' kills | 💰 $' + o.profit.toLocaleString() + '<br>🕐 ' + o.time + '</div>'
+    ).join('');
 }
 
 function updateHistory() {
-  document.getElementById('opList').innerHTML = ops.map(function(o) {
-    return '<div class="op-item"><strong>' + o.codename + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>Loadout: ' + o.weapon + ' / ' + o.ammo + '<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>' + (o.notes ? 'AAR: ' + o.notes + '<br>' : '') + o.time + '</div>';
-  }).join('') || '<p style="text-align:center;color:#999;">No operations logged yet</p>';
+  document.getElementById('opList').innerHTML = ops.map(o => 
+    '<div class="op-item"><strong>' + o.codename + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>👤 Operator: ' + o.player + '<br>📍 LZ: ' + o.lz + ' | 🎯 Target: ' + o.target + '<br>🔫 Loadout: ' + o.weapon + ' / ' + o.ammo + '<br>💀 Kills: ' + o.kills + ' | 💰 Profit: $' + o.profit.toLocaleString() + '<br>' + (o.notes ? '📝 AAR: ' + o.notes + '<br>' : '') + '🕐 ' + o.time + '</div>'
+  ).join('') || '<p style="text-align:center;color:#999;">No operations logged yet</p>';
 }
 
 updateWeaponDropdown();
 updateAmmoDropdown();
 updateDash();
-  </body>
-</html>
-
+console.log('🎯 GZW Tracker loaded! Ready for deployment.');
 </script>
+</body>
+</html>
