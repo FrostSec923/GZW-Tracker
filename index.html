@@ -478,7 +478,7 @@ button:active {
 <label>After Action Report (Notes):</label>
 <textarea id="notes" placeholder="Mission intel, contact reports, lessons learned..."></textarea>
 
-<button type="submit">🚀 LOG OPERATION</button>
+<button type="submit">LOG OPERATION</button>
 </form>
 </div>
 
@@ -639,7 +639,7 @@ document.getElementById('opForm').onsubmit = function(e) {
   localStorage.setItem('ops', JSON.stringify(ops));
   this.reset();
   updateDash();
-  alert('✅ Operation logged successfully!');
+  alert('Operation logged successfully!');
   showTab('dash');
 };
 
@@ -733,8 +733,9 @@ function updateHistory() {
 updateWeaponDropdown();
 updateAmmoDropdown();
 updateDash();
-console.log('🎯 GZW Tracker loaded! Ready for deployment.');
+console.log(' GZW Tracker loaded! Ready for deployment.');
 </script>
 </body>
 </html>
+
 
