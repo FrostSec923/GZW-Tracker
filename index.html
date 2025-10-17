@@ -410,7 +410,7 @@ button:active {
 </head>
 <body>
 <div class="container">
-<h1> GZW OPERATIONS TRACKER </h1>
+<h1>GZW OPERATIONS TRACKER</h1>
 
 <div class="tabs">
   <div class="tab active" onclick="showTab('dash')">Dashboard</div>
@@ -421,7 +421,7 @@ button:active {
 </div>
 
 <div id="dash" class="content active">
-<h2> Mission Control</h2>
+<h2>Mission Control</h2>
 <div class="stats-grid">
 <div class="stat"><h3>Total Ops</h3><div class="value" id="totalOps">0</div></div>
 <div class="stat"><h3>Survival Rate</h3><div class="value" id="survival">0%</div></div>
@@ -432,7 +432,7 @@ button:active {
 </div>
 
 <div id="new" class="content">
-<h2> Log New Operation </h2>
+<h2>Log New Operation</h2>
 <form id="opForm">
 <label>Operator Name:</label>
 <input type="text" id="player" placeholder="Enter your name or callsign" required>
@@ -483,7 +483,7 @@ button:active {
 </div>
 
 <div id="map" class="content">
-<h2> Map Intel</h2>
+<h2>Map Intel</h2>
 
 <div class="map-controls">
 <div class="map-legend">
@@ -515,7 +515,7 @@ Click on the map while logging a new operation to mark your position. Hover over
 </div>
 
 <div id="loadout" class="content">
-<h2>🔫 Loadout Manager</h2>
+<h2>Loadout Manager</h2>
 
 <div class="grid-2">
 <div class="panel">
@@ -535,7 +535,7 @@ Click on the map while logging a new operation to mark your position. Hover over
 </div>
 
 <div id="history" class="content">
-<h2> Operation History</h2>
+<h2>Operation History</h2>
 <div id="opList"></div>
 </div>
 
@@ -543,9 +543,8 @@ Click on the map while logging a new operation to mark your position. Hover over
 
 <script>
 let ops = JSON.parse(localStorage.getItem('ops') || '[]');
-let weapons = JSON.parse(localStorage.getItem('weapons') || '["AK-12", "AK-15", "AK-19", "AK-74M", "AK-74N", "AKM", "AKMN", "AKMSN", "AKS-74U", "CQ A1", "DDM4", "M4A1", "SIG MCX", "AK-308", "SKS", "Mosin", "Mosin(Sniper)", "M700", "SVD", "MP5", "MP7A1", "MP7A2", "Vz. 61 Skorpion", "M870", "Mossberg 590", "M9A1", "Colt 1911", "Colt Commander", "Glock 17", "Tokarev"]');
-let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO", "7.62x39", "5.45x39", "9mm", ".300 AAC Blackout", "4.6x30mm", ".45 ACP", "7.62x51 NATO", "7.62x54R", "12 Gauge"]');
-);
+let weapons = JSON.parse(localStorage.getItem('weapons') || '["AKM","M4A1","AK-74","SCAR-L","MP5","Vector","Mosin","SVD","HK416","M700"]');
+let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO","7.62x39","5.45x39","9mm","7.62x51",".308 Win","12 Gauge"]');
 
 function showTab(tab) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -718,24 +717,22 @@ function updateDash() {
   const totalKills = ops.reduce((s, o) => s + o.kills, 0);
   document.getElementById('totalKills').textContent = totalKills;
   
-  document.getElementById('recent').innerHTML = '<h3>⚡ Recent Operations</h3>' + 
+  document.getElementById('recent').innerHTML = '<h3>Recent Operations</h3>' + 
     ops.slice(0,5).map(o => 
-      '<div class="op-item"><strong>' + o.codename + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>👤 ' + o.player + '<br>📍 LZ: ' + o.lz + ' | 🎯 Target: ' + o.target + '<br>🔫 ' + o.weapon + ' (' + o.ammo + ')<br>💀 ' + o.kills + ' kills | 💰 $' + o.profit.toLocaleString() + '<br>🕐 ' + o.time + '</div>'
+      '<div class="op-item"><strong>' + o.codename + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>Operator: ' + o.player + '<br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>Loadout: ' + o.weapon + ' (' + o.ammo + ')<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>Time: ' + o.time + '</div>'
     ).join('');
 }
 
 function updateHistory() {
   document.getElementById('opList').innerHTML = ops.map(o => 
-    '<div class="op-item"><strong>' + o.codename + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>👤 Operator: ' + o.player + '<br>📍 LZ: ' + o.lz + ' | 🎯 Target: ' + o.target + '<br>🔫 Loadout: ' + o.weapon + ' / ' + o.ammo + '<br>💀 Kills: ' + o.kills + ' | 💰 Profit: $' + o.profit.toLocaleString() + '<br>' + (o.notes ? '📝 AAR: ' + o.notes + '<br>' : '') + '🕐 ' + o.time + '</div>'
+    '<div class="op-item"><strong>' + o.codename + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>Operator: ' + o.player + '<br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>Loadout: ' + o.weapon + ' / ' + o.ammo + '<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>' + (o.notes ? 'AAR: ' + o.notes + '<br>' : '') + 'Time: ' + o.time + '</div>'
   ).join('') || '<p style="text-align:center;color:#999;">No operations logged yet</p>';
 }
 
 updateWeaponDropdown();
 updateAmmoDropdown();
 updateDash();
-console.log(' GZW Tracker loaded! Ready for deployment.');
+console.log('GZW Tracker loaded! Ready for deployment.');
 </script>
 </body>
 </html>
-
-
