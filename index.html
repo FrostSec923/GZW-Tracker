@@ -543,8 +543,9 @@ Click on the map while logging a new operation to mark your position. Hover over
 
 <script>
 let ops = JSON.parse(localStorage.getItem('ops') || '[]');
-let weapons = JSON.parse(localStorage.getItem('weapons') || '["AKM","M4A1","AK-74","SCAR-L","MP5","Vector","Mosin","SVD","HK416","M700"]');
-let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO","7.62x39","5.45x39","9mm","7.62x51",".308 Win","12 Gauge"]');
+let weapons = JSON.parse(localStorage.getItem('weapons') || '["AK-12", "AK-15", "AK-19", "AK-74M", "AK-74N", "AKM", "AKMN", "AKMSN", "AKS-74U", "CQ A1", "DDM4", "M4A1", "SIG MCX", "AK-308", "SKS", "Mosin", "Mosin(Sniper)", "M700", "SVD", "MP5", "MP7A1", "MP7A2", "Vz. 61 Skorpion", "M870", "Mossberg 590", "M9A1", "Colt 1911", "Colt Commander", "Glock 17", "Tokarev"]');
+let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO", "7.62x39", "5.45x39", "9mm", ".300 AAC Blackout", "4.6x30mm", ".45 ACP", "7.62x51 NATO", "7.62x54R", "12 Gauge"]');
+);
 
 function showTab(tab) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -736,3 +737,4 @@ console.log('GZW Tracker loaded! Ready for deployment.');
 </script>
 </body>
 </html>
+
