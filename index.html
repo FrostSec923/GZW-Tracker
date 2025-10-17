@@ -413,11 +413,11 @@ button:active {
 <h1>GZW OPERATIONS TRACKER</h1>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('dash')">Dashboard</div>
-  <div class="tab" onclick="showTab('new')">New Op</div>
-  <div class="tab" onclick="showTab('map')">Map Intel</div>
-  <div class="tab" onclick="showTab('loadout')">Loadout</div>
-  <div class="tab" onclick="showTab('history')">History</div>
+  <div class="tab active" data-tab="dash">Dashboard</div>
+  <div class="tab" data-tab="new">New Op</div>
+  <div class="tab" data-tab="map">Map Intel</div>
+  <div class="tab" data-tab="loadout">Loadout</div>
+  <div class="tab" data-tab="history">History</div>
 </div>
 
 <div id="dash" class="content active">
@@ -521,14 +521,14 @@ Click on the map while logging a new operation to mark your position. Hover over
 <div class="panel">
 <h3>Weapons Arsenal</h3>
 <input type="text" id="newWeapon" placeholder="Enter weapon name (e.g., M4A1)">
-<button onclick="addWeapon()" class="btn-small">Add Weapon</button>
+<button type="button" id="addWeaponBtn" class="btn-small">Add Weapon</button>
 <div id="weaponList" style="margin-top:15px;"></div>
 </div>
 
 <div class="panel">
 <h3>Ammo Types</h3>
 <input type="text" id="newAmmo" placeholder="Enter ammo type (e.g., 5.56 NATO)">
-<button onclick="addAmmo()" class="btn-small">Add Ammo</button>
+<button type="button" id="addAmmoBtn" class="btn-small">Add Ammo</button>
 <div id="ammoList" style="margin-top:15px;"></div>
 </div>
 </div>
@@ -545,13 +545,18 @@ Click on the map while logging a new operation to mark your position. Hover over
 let ops = JSON.parse(localStorage.getItem('ops') || '[]');
 let weapons = JSON.parse(localStorage.getItem('weapons') || '["AK-12", "AK-15", "AK-19", "AK-74M", "AK-74N", "AKM", "AKMN", "AKMSN", "AKS-74U", "CQ A1", "DDM4", "M4A1", "SIG MCX", "AK-308", "SKS", "Mosin", "Mosin(Sniper)", "M700", "SVD", "MP5", "MP7A1", "MP7A2", "Vz. 61 Skorpion", "M870", "Mossberg 590", "M9A1", "Colt 1911", "Colt Commander", "Glock 17", "Tokarev"]');
 let ammo = JSON.parse(localStorage.getItem('ammo') || '["5.56 NATO", "7.62x39", "5.45x39", "9mm", ".300 AAC Blackout", "4.6x30mm", ".45 ACP", "7.62x51 NATO", "7.62x54R", "12 Gauge"]');
-);
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
 function showTab(tab) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(tab).classList.add('active');
-  event.target.classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
   
   if(tab === 'dash') updateDash();
   if(tab === 'history') updateHistory();
@@ -565,6 +570,12 @@ function showTab(tab) {
     updateAmmoDropdown();
   }
 }
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    showTab(this.getAttribute('data-tab'));
+  });
+});
 
 document.getElementById('mapImage').addEventListener('click', function(e) {
   const rect = this.getBoundingClientRect();
@@ -596,7 +607,18 @@ function renderMapMarkers() {
     });
     
     marker.addEventListener('click', function() {
-      alert('OPERATION: ' + op.codename + '\nOperator: ' + op.player + '\nLZ: ' + op.lz + '\nTarget: ' + op.target + '\nResult: ' + op.result + '\nLoadout: ' + op.weapon + ' / ' + op.ammo + '\nKills: ' + op.kills + '\nProfit: $' + op.profit.toLocaleString() + '\nTime: ' + op.time);
+      const details = [
+        'OPERATION: ' + op.codename,
+        'Operator: ' + op.player,
+        'LZ: ' + op.lz,
+        'Target: ' + op.target,
+        'Result: ' + op.result,
+        'Loadout: ' + op.weapon + ' / ' + op.ammo,
+        'Kills: ' + op.kills,
+        'Profit: $' + op.profit.toLocaleString(),
+        'Time: ' + op.time
+      ].join('\n');
+      alert(details);
     });
     
     container.appendChild(marker);
@@ -605,7 +627,7 @@ function renderMapMarkers() {
 
 function showTooltip(op, e) {
   const tooltip = document.getElementById('tooltip');
-  tooltip.innerHTML = '<strong>' + op.codename + '</strong><br>LZ: ' + op.lz + '<br>' + op.kills + ' kills | $' + op.profit.toLocaleString();
+  tooltip.innerHTML = '<strong>' + escapeHtml(op.codename) + '</strong><br>LZ: ' + escapeHtml(op.lz) + '<br>' + op.kills + ' kills | $' + op.profit.toLocaleString();
   tooltip.style.left = (e.pageX + 15) + 'px';
   tooltip.style.top = (e.pageY + 15) + 'px';
   tooltip.classList.add('show');
@@ -645,17 +667,27 @@ document.getElementById('opForm').onsubmit = function(e) {
 
 function updateWeaponDropdown() {
   const select = document.getElementById('weapon');
-  select.innerHTML = '<option value="">Select Weapon...</option>' + 
-    weapons.sort().map(w => '<option>' + w + '</option>').join('');
+  select.innerHTML = '<option value="">Select Weapon...</option>';
+  weapons.sort().forEach(w => {
+    const option = document.createElement('option');
+    option.value = w;
+    option.textContent = w;
+    select.appendChild(option);
+  });
 }
 
 function updateAmmoDropdown() {
   const select = document.getElementById('ammo');
-  select.innerHTML = '<option value="">Select Ammo...</option>' + 
-    ammo.sort().map(a => '<option>' + a + '</option>').join('');
+  select.innerHTML = '<option value="">Select Ammo...</option>';
+  ammo.sort().forEach(a => {
+    const option = document.createElement('option');
+    option.value = a;
+    option.textContent = a;
+    select.appendChild(option);
+  });
 }
 
-function addWeapon() {
+document.getElementById('addWeaponBtn').addEventListener('click', function() {
   const input = document.getElementById('newWeapon');
   const w = input.value.trim();
   if(w && !weapons.includes(w)) {
@@ -665,11 +697,11 @@ function addWeapon() {
     updateWeaponDropdown();
     input.value = '';
   }
-}
+});
 
-function removeWeapon(w) {
-  if(confirm('Remove ' + w + '?')) {
-    weapons = weapons.filter(x => x !== w);
+function removeWeapon(weaponName) {
+  if(confirm('Remove ' + weaponName + '?')) {
+    weapons = weapons.filter(x => x !== weaponName);
     localStorage.setItem('weapons', JSON.stringify(weapons));
     updateWeaponList();
     updateWeaponDropdown();
@@ -677,12 +709,30 @@ function removeWeapon(w) {
 }
 
 function updateWeaponList() {
-  document.getElementById('weaponList').innerHTML = weapons.sort().map(w => 
-    '<div class="weapon-item"><span>' + w + '</span><button onclick="removeWeapon(\'' + w + '\')" class="btn-small">Remove</button></div>'
-  ).join('');
+  const list = document.getElementById('weaponList');
+  list.innerHTML = '';
+  weapons.sort().forEach(w => {
+    const div = document.createElement('div');
+    div.className = 'weapon-item';
+    
+    const span = document.createElement('span');
+    span.textContent = w;
+    
+    const btn = document.createElement('button');
+    btn.textContent = 'Remove';
+    btn.className = 'btn-small';
+    btn.type = 'button';
+    btn.addEventListener('click', function() {
+      removeWeapon(w);
+    });
+    
+    div.appendChild(span);
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
 }
 
-function addAmmo() {
+document.getElementById('addAmmoBtn').addEventListener('click', function() {
   const input = document.getElementById('newAmmo');
   const a = input.value.trim();
   if(a && !ammo.includes(a)) {
@@ -692,11 +742,11 @@ function addAmmo() {
     updateAmmoDropdown();
     input.value = '';
   }
-}
+});
 
-function removeAmmo(a) {
-  if(confirm('Remove ' + a + '?')) {
-    ammo = ammo.filter(x => x !== a);
+function removeAmmo(ammoName) {
+  if(confirm('Remove ' + ammoName + '?')) {
+    ammo = ammo.filter(x => x !== ammoName);
     localStorage.setItem('ammo', JSON.stringify(ammo));
     updateAmmoList();
     updateAmmoDropdown();
@@ -704,9 +754,27 @@ function removeAmmo(a) {
 }
 
 function updateAmmoList() {
-  document.getElementById('ammoList').innerHTML = ammo.sort().map(a => 
-    '<div class="weapon-item"><span>' + a + '</span><button onclick="removeAmmo(\'' + a + '\')" class="btn-small">Remove</button></div>'
-  ).join('');
+  const list = document.getElementById('ammoList');
+  list.innerHTML = '';
+  ammo.sort().forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'weapon-item';
+    
+    const span = document.createElement('span');
+    span.textContent = a;
+    
+    const btn = document.createElement('button');
+    btn.textContent = 'Remove';
+    btn.className = 'btn-small';
+    btn.type = 'button';
+    btn.addEventListener('click', function() {
+      removeAmmo(a);
+    });
+    
+    div.appendChild(span);
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
 }
 
 function updateDash() {
@@ -718,16 +786,41 @@ function updateDash() {
   const totalKills = ops.reduce((s, o) => s + o.kills, 0);
   document.getElementById('totalKills').textContent = totalKills;
   
-  document.getElementById('recent').innerHTML = '<h3>Recent Operations</h3>' + 
-    ops.slice(0,5).map(o => 
-      '<div class="op-item"><strong>' + o.codename + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>Operator: ' + o.player + '<br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>Loadout: ' + o.weapon + ' (' + o.ammo + ')<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>Time: ' + o.time + '</div>'
-    ).join('');
+  const recentDiv = document.getElementById('recent');
+  recentDiv.innerHTML = '<h3>Recent Operations</h3>';
+  
+  ops.slice(0,5).forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'op-item';
+    div.innerHTML = '<strong>' + escapeHtml(o.codename) + '</strong> <span class="status status-' + o.result.toLowerCase() + '">' + escapeHtml(o.result) + '</span><br>Operator: ' + escapeHtml(o.player) + '<br>LZ: ' + escapeHtml(o.lz) + ' | Target: ' + escapeHtml(o.target) + '<br>Loadout: ' + escapeHtml(o.weapon) + ' (' + escapeHtml(o.ammo) + ')<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>Time: ' + escapeHtml(o.time);
+    recentDiv.appendChild(div);
+  });
 }
 
 function updateHistory() {
-  document.getElementById('opList').innerHTML = ops.map(o => 
-    '<div class="op-item"><strong>' + o.codename + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + o.result + '</span><br>Operator: ' + o.player + '<br>LZ: ' + o.lz + ' | Target: ' + o.target + '<br>Loadout: ' + o.weapon + ' / ' + o.ammo + '<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString() + '<br>' + (o.notes ? 'AAR: ' + o.notes + '<br>' : '') + 'Time: ' + o.time + '</div>'
-  ).join('') || '<p style="text-align:center;color:#999;">No operations logged yet</p>';
+  const list = document.getElementById('opList');
+  
+  if(ops.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:#999;">No operations logged yet</p>';
+    return;
+  }
+  
+  list.innerHTML = '';
+  ops.forEach(o => {
+    const div = document.createElement('div');
+    div.className = 'op-item';
+    
+    let html = '<strong>' + escapeHtml(o.codename) + '</strong><span class="status status-' + o.result.toLowerCase() + '">' + escapeHtml(o.result) + '</span><br>Operator: ' + escapeHtml(o.player) + '<br>LZ: ' + escapeHtml(o.lz) + ' | Target: ' + escapeHtml(o.target) + '<br>Loadout: ' + escapeHtml(o.weapon) + ' / ' + escapeHtml(o.ammo) + '<br>Kills: ' + o.kills + ' | Profit: $' + o.profit.toLocaleString();
+    
+    if(o.notes) {
+      html += '<br>AAR: ' + escapeHtml(o.notes);
+    }
+    
+    html += '<br>Time: ' + escapeHtml(o.time);
+    
+    div.innerHTML = html;
+    list.appendChild(div);
+  });
 }
 
 updateWeaponDropdown();
@@ -737,4 +830,3 @@ console.log('GZW Tracker loaded! Ready for deployment.');
 </script>
 </body>
 </html>
-
